@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/EscenaPrincipalCrucial.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/Location-basedGame.unity
+    guid: 59c585a35683da64cbf2758afe27f084
+  m_configObjects:
+    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 69b97b29993f55c409353dff2159a0ea, type: 2}
+    UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: afff36b4c9bae0a4a807c4952d313acd, type: 2}
+    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: c691a3f8a64254a428c12fbda3dd93c7, type: 2}
+    com.unity.xr.magicleap.magic_leap_settings: {fileID: 11400000, guid: 3512924a37500be4e92e3ca6cf4bfda6, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: a1b156502b590364fafefd03be0a1852, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 0ef7fc0f78ae865428221f59f14a63af, type: 2}

@@ -1,0 +1,20 @@
+# Archivos de Unity a ignorar
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+
+# Configuración específica del editor
+/Assets/Plugins/*
+
+# Archivos de Unity generados automáticamente
+*.csproj
+*.sln
+*.unitypackage
+*.pidb
+*.swp
+*.svd
