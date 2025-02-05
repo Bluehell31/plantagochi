@@ -14,27 +14,30 @@ public class GameElementsManager : MonoBehaviour
     public GameObject imagePanel;
     private ImagePanelManager imagePanelManager;
 
+
     public GameObject gameElementsPanel;
 
     public GameObject TiendaPlantas; // Asigna el panel de tienda de plantas en el Inspector
     void Start()
     {
-        gestorDeDatos = FindObjectOfType<GestorDeDatos>();
+        gestorDeDatos = GestorDeDatos.Instance;
         datosJugador = gestorDeDatos.CargarDatos();
 
         if (string.IsNullOrEmpty(datosJugador.nombreJugador))
         {
             datosJugador.nombreJugador = "user001"; // Valor por defecto
-            gestorDeDatos.GuardarDatos(datosJugador);
+            
         }
 
         playerNameText.text = datosJugador.nombreJugador;
+        gestorDeDatos.GuardarDatos(datosJugador);
 
         imagePanelManager = imagePanel.GetComponent<ImagePanelManager>();
 
         shopPolinizarPanel.SetActive(false);
         imagePanel.SetActive(false);
         TiendaPlantas.SetActive(false);
+        //DebugMenu.SetActive(false);
     }
 
 

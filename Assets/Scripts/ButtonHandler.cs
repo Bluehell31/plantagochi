@@ -75,6 +75,7 @@ public class ButtonHandler : MonoBehaviour
     /// </summary>
     public void UpdateUI()
     {
+        datosJugador = gestorDeDatos.CargarDatos();
         // Datos actuales en JSON
         int cantidadPolen         = datosJugador.cantidadPolen;
         int cantidadFertilizante  = datosJugador.cantidadFertilizante;
@@ -86,7 +87,7 @@ public class ButtonHandler : MonoBehaviour
         MonedasTxt.text           = monedas.ToString();
 
         // Comprobamos si la planta está viva (salud > 0)
-        bool plantIsAlive = healthAndExpSprites.GetCurrentHealth() > 0;
+        //bool plantIsAlive = healthAndExpSprites.GetCurrentHealth() > 0;
 
         // Comprobamos si ya se usaron las tareas diarias
         bool waterUsed     = healthAndExpSprites.receivedWater;
@@ -94,16 +95,14 @@ public class ButtonHandler : MonoBehaviour
         bool sparklesUsed  = healthAndExpSprites.receivedSparkles;
 
         // Botón de agua
-        waterButton.interactable =  plantIsAlive && !waterUsed;
+        waterButton.interactable =  !waterUsed;
 
         // Botón de polinizar
-        polinizeButton.interactable =  plantIsAlive
-                                       && !sparklesUsed
+        polinizeButton.interactable =  !sparklesUsed
                                        && (cantidadPolen > 0);
 
         // Botón de fertilizar
-        fertilizeButton.interactable = plantIsAlive
-                                       && !nutrientsUsed
+        fertilizeButton.interactable = !nutrientsUsed
                                        && (cantidadFertilizante > 0);
     }
 
@@ -136,10 +135,9 @@ public class ButtonHandler : MonoBehaviour
         if (!healthAndExpSprites.receivedSparkles && datosJugador.cantidadPolen > 0)
         {
             healthAndExpSprites.ReceiveSparkles();
-
+            
             // Consumimos 1 de polen
-            datosJugador.cantidadPolen--;
-            gestorDeDatos.GuardarDatos(datosJugador);
+            
 
             StartCoroutine(ActivateButtonForDuration(polinizeButton, polinizacion2d, 3f));
             StartCoroutine(DeactivateOtherButtonsForDuration(polinizeButton, 3f));
@@ -159,10 +157,6 @@ public class ButtonHandler : MonoBehaviour
         if (!healthAndExpSprites.receivedNutrients && datosJugador.cantidadFertilizante > 0)
         {
             healthAndExpSprites.ReceiveNutrients();
-
-            // Consumimos 1 de fertilizante
-            datosJugador.cantidadFertilizante--;
-            gestorDeDatos.GuardarDatos(datosJugador);
 
             StartCoroutine(ActivateButtonForDuration(fertilizeButton, fertilizacion2d, 3f));
             StartCoroutine(DeactivateOtherButtonsForDuration(fertilizeButton, 3f));
@@ -203,6 +197,7 @@ public class ButtonHandler : MonoBehaviour
     {
         if (SpendCoins(25))  // Comprueba si hay monedas suficientes
         {
+            //datosJugador = gestorDeDatos.CargarDatos();
             datosJugador.cantidadPolen += 3;
             gestorDeDatos.GuardarDatos(datosJugador);
             UpdateUI();
@@ -213,6 +208,7 @@ public class ButtonHandler : MonoBehaviour
     {
         if (SpendCoins(25))  // Comprueba si hay monedas suficientes
         {
+            //datosJugador = gestorDeDatos.CargarDatos();
             datosJugador.cantidadFertilizante += 3;
             gestorDeDatos.GuardarDatos(datosJugador);
             UpdateUI();
@@ -224,6 +220,7 @@ public class ButtonHandler : MonoBehaviour
     // ---------------------------------------------------------------------
     public void AddCoins(int amount)
     {
+        datosJugador = gestorDeDatos.CargarDatos();
         datosJugador.monedas += amount;
         gestorDeDatos.GuardarDatos(datosJugador);
         coinsTiendaUI.RefreshCoinsFromData();
@@ -232,6 +229,7 @@ public class ButtonHandler : MonoBehaviour
 
     public bool SpendCoins(int amount)
     {
+        datosJugador = gestorDeDatos.CargarDatos();
         if (datosJugador.monedas >= amount)
         {
             datosJugador.monedas -= amount;
@@ -259,7 +257,7 @@ public class ButtonHandler : MonoBehaviour
     public void OnButtonScanClicked()
     {
         // Actualizamos algunos datos del JSON (por si deseas sincronizarlos)
-        datosJugador.experiencia = healthAndExpSprites.GetCurrentExp();
+        datosJugador.experiencia = 1;
         datosJugador.nivel       = healthAndExpSprites.GetPlayerLevel();
         datosJugador.currentHealth = healthAndExpSprites.GetCurrentHealth();
 

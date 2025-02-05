@@ -29,10 +29,19 @@ public class GestorDeDatos : MonoBehaviour
     // Guardar datos en JSON
     public void GuardarDatos(DatosJugador datos)
     {
-        string json = JsonUtility.ToJson(datos, true);
-        File.WriteAllText(rutaArchivo, json);
-        Debug.Log("📁 Datos guardados en: " + rutaArchivo);
+        try
+        {
+            string json = JsonUtility.ToJson(datos, true); // Convierte a JSON
+            Debug.Log(json);
+            File.WriteAllText(rutaArchivo, json);         // Escribe el archivo
+            Debug.Log("📁 Datos guardados correctamente en: " + rutaArchivo);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("❌ Error al guardar los datos: " + e.Message);
+        }
     }
+
 
     // Cargar datos desde JSON
     public DatosJugador CargarDatos()
@@ -50,7 +59,8 @@ public class GestorDeDatos : MonoBehaviour
                 nivel = 1, 
                 experiencia = 0, 
                 currentHealth = 10, 
-                lastUpdatedDate = System.DateTime.Now.ToString() 
+                lastUpdatedDate = System.DateTime.Now.ToString(),
+                monedas = 10
             };
         }
     }

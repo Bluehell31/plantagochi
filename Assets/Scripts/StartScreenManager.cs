@@ -30,7 +30,7 @@ public class StartScreenManager : MonoBehaviour
 
     public void OnStartPanelButtonPressed()
     {
-        // Cuando se presiona el botón de inicio en el panel de inicio, mostrar el panel de bienvenida
+        // Cuando se presiona el botÃ³n de inicio en el panel de inicio, mostrar el panel de bienvenida
         startPanel.SetActive(false);
         welcomePanel.SetActive(true);
         gameElements.SetActive(false);
@@ -38,7 +38,7 @@ public class StartScreenManager : MonoBehaviour
 
     public void OnGameStarted()
     {
-        // Esta función se llama cuando se inicia el juego desde el panel de bienvenida
+        // Esta funciÃ³n se llama cuando se inicia el juego desde el panel de bienvenida
         PlayerPrefs.SetInt("GameStarted", 1);
         PlayerPrefs.Save();
 

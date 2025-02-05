@@ -29,7 +29,7 @@ public class PlantLevelManager : MonoBehaviour
     void Start()
     {
         // Buscar el GestorDeDatos (o asignarlo por inspector, como prefieras)
-        gestorDeDatos = FindObjectOfType<GestorDeDatos>();
+        gestorDeDatos = GestorDeDatos.Instance;
         if (gestorDeDatos == null)
         {
             Debug.LogError("❌ No se encontró GestorDeDatos en la escena.");
@@ -55,6 +55,7 @@ public class PlantLevelManager : MonoBehaviour
     /// </summary>
     public int GetPlantLevel()
     {
+        datosJugador = gestorDeDatos.CargarDatos();
         // Si no se han cargado datos por alguna razón, regresamos un valor por defecto
         return (datosJugador != null) ? datosJugador.nivel : 1;
     }
@@ -64,14 +65,15 @@ public class PlantLevelManager : MonoBehaviour
     /// </summary>
     public void IncreaseLevel()
     {
+        datosJugador = gestorDeDatos.CargarDatos();
         if (datosJugador == null) return;
         
         jugadorNivel = datosJugador.nivel;
         // Verificar si no se alcanzó el nivel máximo
         if (jugadorNivel < maxLevel)
         {
-            jugadorNivel++;
-            datosJugador.nivel = jugadorNivel;
+            
+            datosJugador.nivel++;
             gestorDeDatos.GuardarDatos(datosJugador);
 
             Debug.Log($"🌱 La planta ha subido de nivel. Nuevo nivel: {datosJugador.nivel}");
@@ -90,6 +92,7 @@ public class PlantLevelManager : MonoBehaviour
     /// </summary>
     public void SetPlayerLevel(int newLevel)
     {
+        datosJugador = gestorDeDatos.CargarDatos();
         if (datosJugador == null) return;
 
         // Limitar el nivel entre 1 y maxLevel

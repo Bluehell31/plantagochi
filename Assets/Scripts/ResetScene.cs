@@ -28,6 +28,7 @@ public class ResetScene : MonoBehaviour
             receivedSparkles = false,
             lastUpdatedDate = System.DateTime.Now.ToString("yyyy-MM-dd"),
             completedDailyTasks = false,
+            monedas = 10,
             levelUpDoneToday = false
         };
 
