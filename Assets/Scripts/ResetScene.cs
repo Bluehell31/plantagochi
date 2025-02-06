@@ -1,22 +1,18 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.IO;
 
 public class ResetScene : MonoBehaviour
 {
-    private GestorDeDatos gestorDeDatos;
-
     public void ResetSceneToStart()
     {
-        gestorDeDatos = FindObjectOfType<GestorDeDatos>();
-
-        if (gestorDeDatos == null)
+        // Se utiliza el singleton del GestorDeDatos
+        if (GestorDeDatos.Instance == null)
         {
             Debug.LogError("❌ Error: No se encontró el GestorDeDatos en la escena.");
-            return; // Evita que el código continúe si `gestorDeDatos` es null
+            return;
         }
 
-        // Restablecer los datos del jugador
+        // Crear nuevos datos por defecto para el jugador
         DatosJugador datosJugador = new DatosJugador()
         {
             nombreJugador = "user001",
@@ -28,19 +24,22 @@ public class ResetScene : MonoBehaviour
             receivedSparkles = false,
             lastUpdatedDate = System.DateTime.Now.ToString("yyyy-MM-dd"),
             completedDailyTasks = false,
-            monedas = 10,
-            levelUpDoneToday = false
+            monedas = 50,
+            levelUpDoneToday = false,
+            // Si es necesario, agrega otros campos como cantidadPolen y cantidadFertilizante:
+            cantidadPolen = 0,
+            cantidadFertilizante = 0
         };
 
-        // Eliminar PlayerPrefs (aunque ya no se usa, por si quedaron datos antiguos)
+        // Eliminar datos antiguos de PlayerPrefs, en caso de que hayan quedado
         PlayerPrefs.DeleteAll();
 
-        // Guardar los nuevos datos en JSON
-        gestorDeDatos.GuardarDatos(datosJugador);
+        // Actualizar la copia en memoria con los nuevos datos y guardarlos en JSON
+        GestorDeDatos.Instance.ActualizarDatos(datosJugador);
 
         Debug.Log("📁 Datos reiniciados. Recargando escena...");
 
-        // Recargar la escena
+        // Recargar la escena actual
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

@@ -1,45 +1,45 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class GameElementsManager : MonoBehaviour
 {
-    private GestorDeDatos gestorDeDatos;
     private DatosJugador datosJugador;
-
 
     public Text playerNameText;
     public GameObject shopPolinizarPanel;
     public GameObject imagePanel;
     private ImagePanelManager imagePanelManager;
-
-
     public GameObject gameElementsPanel;
+    public GameObject TiendaPlantas; // Panel de tienda de plantas
 
-    public GameObject TiendaPlantas; // Asigna el panel de tienda de plantas en el Inspector
     void Start()
     {
-        gestorDeDatos = GestorDeDatos.Instance;
-        datosJugador = gestorDeDatos.CargarDatos();
+        if (GestorDeDatos.Instance == null)
+        {
+            Debug.LogError("GestorDeDatos no se encontró en la escena.");
+            return;
+        }
+
+        // Se obtiene la copia en memoria
+        datosJugador = GestorDeDatos.Instance.GetDatosJugador();
 
         if (string.IsNullOrEmpty(datosJugador.nombreJugador))
         {
             datosJugador.nombreJugador = "user001"; // Valor por defecto
-            
         }
 
-        playerNameText.text = datosJugador.nombreJugador;
-        gestorDeDatos.GuardarDatos(datosJugador);
+        if (playerNameText != null)
+            playerNameText.text = datosJugador.nombreJugador;
+
+        GestorDeDatos.Instance.GuardarDatos();
 
         imagePanelManager = imagePanel.GetComponent<ImagePanelManager>();
 
         shopPolinizarPanel.SetActive(false);
         imagePanel.SetActive(false);
         TiendaPlantas.SetActive(false);
-        //DebugMenu.SetActive(false);
     }
-
 
     public void ToggleShopPolinizarPanel()
     {
@@ -56,7 +56,10 @@ public class GameElementsManager : MonoBehaviour
         {
             imagePanel.SetActive(true);
             gameElementsPanel.SetActive(false);
-            imagePanelManager.ResetToFirstImage();
+            if (imagePanelManager != null)
+            {
+                imagePanelManager.ResetToFirstImage();
+            }
         }
     }
 
@@ -65,21 +68,12 @@ public class GameElementsManager : MonoBehaviour
         gameElementsPanel.SetActive(true);
     }
 
-    //Para la tienda de plantas
     public void ShowTiendaPlantas()
     {
         if (gameElementsPanel.activeSelf)
         {
             TiendaPlantas.SetActive(true);
             gameElementsPanel.SetActive(false);
-            
         }
     }
-
-
-
-
-
-
 }
-

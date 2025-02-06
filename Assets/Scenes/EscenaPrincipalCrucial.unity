@@ -4342,7 +4342,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8437566df74b62f4e8296b39bd771dcc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  plantModel: {fileID: 3790302616064359680, guid: c299836e648c83b4b849d09ad457a3b8, type: 3}
+  plantPrefab: {fileID: 0}
+  currentPlantInstance: {fileID: 0}
 --- !u!4 &765993121
 Transform:
   m_ObjectHideFlags: 0
@@ -4806,7 +4807,6 @@ MonoBehaviour:
   receivedNutrients: 0
   receivedSparkles: 0
   completedDailyTasks: 0
-  centerObjectScript: {fileID: 0}
   waterIcon: {fileID: 1554061569}
   nutrientsIcon: {fileID: 936699463}
   sparklesIcon: {fileID: 1897099627}
@@ -8676,7 +8676,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1489862280
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11406,7 +11406,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2071107515
 RectTransform:
   m_ObjectHideFlags: 0

@@ -1988,9 +1988,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1524297567}
-        m_TargetAssemblyTypeName: IrAEscenaPrincipal, Assembly-CSharp
-        m_MethodName: MainMenu
+      - m_Target: {fileID: 1524297569}
+        m_TargetAssemblyTypeName: EscenasManager, Assembly-CSharp
+        m_MethodName: RegresarAEscenaPrincipal
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3223,7 +3223,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: DESEAS CONTINUAR Y RECLAMAR LA RECOMPENSA?
+  m_text: DESEAS CONTINUAR Y RECLAMAR  200 COINS?
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_sharedMaterial: {fileID: 2140032, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
@@ -3576,7 +3576,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1524297568}
-  - component: {fileID: 1524297567}
+  - component: {fileID: 1524297569}
   m_Layer: 0
   m_Name: IrAEscenaPrincipal
   m_TagString: Untagged
@@ -3584,18 +3584,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1524297567
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1524297566}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 819c0fdb84597c041a0f63e6cb8fe8b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1524297568
 Transform:
   m_ObjectHideFlags: 0
@@ -3611,6 +3599,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1524297569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1524297566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee1ff51ee1d688e4da0fc810dcad626f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1537077063
 GameObject:
   m_ObjectHideFlags: 0

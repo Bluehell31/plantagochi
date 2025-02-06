@@ -9,15 +9,6 @@ public class EscenasManager : MonoBehaviour
         // Si necesitas hacer algo al iniciar, agr�galo aqu�.
     }
 
-    public void IrAEscenaQR()
-    {
-        // Desactivar objetos de la escena principal
-        DesactivarObjetosEscenaPrincipal();
-
-        // Cambiar a la escena QR
-        SceneManager.LoadScene("EscenaQR", LoadSceneMode.Single);
-    }
-
     private void DesactivarObjetosEscenaPrincipal()
     {
         GameObject[] objetosEscenaPrincipal = SceneManager.GetActiveScene().GetRootGameObjects();

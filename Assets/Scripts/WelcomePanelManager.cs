@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class WelcomePanelManager : MonoBehaviour
 {
@@ -15,21 +16,19 @@ public class WelcomePanelManager : MonoBehaviour
 
     void Start()
     {
-        gestorDeDatos = FindObjectOfType<GestorDeDatos>();
-
-        if (gestorDeDatos == null)
+        if (GestorDeDatos.Instance == null)
         {
-            Debug.LogError("❌ Error: No se encontró `GestorDeDatos` en la escena.");
+            Debug.LogError("GestorDeDatos no se encontró en la escena.");
             return;
         }
-
-        datosJugador = gestorDeDatos.CargarDatos();
+        gestorDeDatos = GestorDeDatos.Instance;
+        datosJugador = gestorDeDatos.GetDatosJugador();
 
         if (datosJugador == null)
         {
-            Debug.LogError("❌ Error: `datosJugador` es NULL. Intentando crear nuevos datos...");
+            Debug.LogError("datosJugador es NULL. Se crearán nuevos datos...");
             datosJugador = new DatosJugador() { nombreJugador = "user001" };
-            gestorDeDatos.GuardarDatos(datosJugador);
+            gestorDeDatos.GuardarDatos();
         }
 
         welcomePanelButton.interactable = false;
@@ -44,19 +43,19 @@ public class WelcomePanelManager : MonoBehaviour
     {
         if (gestorDeDatos == null)
         {
-            Debug.LogError("❌ Error: `gestorDeDatos` es NULL.");
+            Debug.LogError("GestorDeDatos es NULL.");
             return;
         }
 
         if (datosJugador == null)
         {
-            Debug.LogError("❌ Error: `datosJugador` es NULL.");
+            Debug.LogError("datosJugador es NULL.");
             return;
         }
 
         if (playerNameInput == null)
         {
-            Debug.LogError("❌ Error: `playerNameInput` no está asignado en el Inspector.");
+            Debug.LogError("playerNameInput no está asignado en el Inspector.");
             return;
         }
 
@@ -67,17 +66,17 @@ public class WelcomePanelManager : MonoBehaviour
         }
 
         datosJugador.nombreJugador = playerName;
-        gestorDeDatos.GuardarDatos(datosJugador);
+        gestorDeDatos.GuardarDatos();
 
         if (welcomePanel != null)
             welcomePanel.SetActive(false);
         else
-            Debug.LogError("❌ Error: `welcomePanel` no está asignado en el Inspector.");
+            Debug.LogError("welcomePanel no está asignado en el Inspector.");
 
         if (gameElements != null)
             gameElements.SetActive(true);
         else
-            Debug.LogError("❌ Error: `gameElements` no está asignado en el Inspector.");
+            Debug.LogError("gameElements no está asignado en el Inspector.");
 
         if (startScreenManager != null)
         {
@@ -85,7 +84,7 @@ public class WelcomePanelManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("❌ Error: `startScreenManager` no está asignado en el Inspector.");
+            Debug.LogError("startScreenManager no está asignado en el Inspector.");
         }
     }
 }

@@ -5,49 +5,31 @@ using UnityEngine.UI;
 public class HealthAndExpSprites : MonoBehaviour
 {
     public static HealthAndExpSprites Instance { get; private set; }
-
-
-    private GestorDeDatos gestorDeDatos;
-    private DatosJugador datosJugador;
     private PlantLevelManager plantLevelManager;
 
+    [Header("Barras e imágenes")]
+    public Image healthBarImage;
+    public Image expBarImage;
+    public Sprite[] healthBarSprites;
+    public Sprite[] expBarSprites;
 
-    // Barras
-    public Image healthBarImage;  
-    public Image expBarImage;  
-    public Sprite[] healthBarSprites; 
-    public Sprite[] expBarSprites;    
-
-    // Variables para la salud
     private float maxHealth = 100f;
     private float minHealth = 10f;
     private float currentHealth;
-    
-    /* Variables de tiempo
-    private float lastReceivedTime;
-    private const float healthDecrementTime = 8f * 3600f;
-    private const float reviveTimeLimit = 24f * 3600f;
-*/
-    // Variables de necesidades
+
     private DateTime lastUpdatedDate;
     public bool receivedWater = false;
     public bool receivedNutrients = false;
     public bool receivedSparkles = false;
     public bool completedDailyTasks = false;
 
-    
-
-    public CenterObjectInCanvas centerObjectScript;
-
-    // Referencias a los iconos de las necesidades
+    [Header("Iconos de necesidades")]
     public Image waterIcon;
     public Image nutrientsIcon;
     public Image sparklesIcon;
 
-    public float GetCurrentHealth() => datosJugador.currentHealth;
-    //public float GetCurrentExp() => datosJugador.experiencia; 
-    public int GetPlayerLevel() => datosJugador.nivel;
-
+    // No es necesario mantener una variable local "datosJugador"
+    // Se accederá siempre a GestorDeDatos.Instance.GetDatosJugador()
 
     void Awake()
     {
@@ -62,132 +44,126 @@ public class HealthAndExpSprites : MonoBehaviour
         }
     }
 
-    public void Start()
+    void Start()
     {
-        Debug.Log("ESTOY EN START ");
-        gestorDeDatos = GestorDeDatos.Instance;
         plantLevelManager = PlantLevelManager.Instance;
-        
-        datosJugador = gestorDeDatos.CargarDatos();
-
-        currentHealth = datosJugador.currentHealth;
-        
+        // Usamos la única instancia en memoria para obtener los datos
+        var datos = GestorDeDatos.Instance.GetDatosJugador();
+        currentHealth = datos.currentHealth;
         UpdateHealthBar();
-        
-        lastUpdatedDate = DateTime.Parse(datosJugador.lastUpdatedDate);
-        Debug.Log("VOY A INVOKEREPEATING ");
-        InvokeRepeating("UpdateStats", 1f, 1f);
 
+        // Convertir la fecha almacenada
+        DateTime.TryParse(datos.lastUpdatedDate, out lastUpdatedDate);
+
+        // Invoca la actualización de stats de forma periódica
+        InvokeRepeating("UpdateStats", 1f, 1f);
         LoadPlantNeeds();
         UpdateExpBar();
-
-        Debug.Log("VOY A ENTRAR A HANDLEENERGYANDHEALTH ");
         HandleEnergyAndHealth();
-        
-        
-       
+
+        // (Opcional) Suscribirse al evento OnDataChanged para actualizar la UI cuando se modifiquen los datos
+        GestorDeDatos.Instance.OnDataChanged += OnDatosActualizados;
     }
 
+    void OnDatosActualizados()
+    {
+        // Cada vez que se actualicen los datos, actualizamos la barra y otros elementos de la UI
+        UpdateHealthBar();
+        UpdateExpBar();
+    }
 
     void UpdateStats()
     {
-        Debug.Log("Estoy Actualizando las stats");
+        Debug.Log("Actualizando stats");
         HandleEnergyAndHealth();
     }
 
     void CheckDailyTasks()
     {
-        if(receivedWater && receivedNutrients && receivedSparkles)
+        if (receivedWater && receivedNutrients && receivedSparkles)
         {
             completedDailyTasks = true;
-            datosJugador.completedDailyTasks = completedDailyTasks;
-            
-            bool levelUpDoneToday = datosJugador.levelUpDoneToday;
-            gestorDeDatos.GuardarDatos(datosJugador);
-
-            if (!levelUpDoneToday)
+            var datos = GestorDeDatos.Instance.GetDatosJugador();
+            datos.completedDailyTasks = true;
+            if (!datos.levelUpDoneToday)
             {
-                levelUpDoneToday = true;
-                datosJugador.levelUpDoneToday = levelUpDoneToday; // Marcamos que ya subió de nivel hoy
+                datos.levelUpDoneToday = true;
                 plantLevelManager.IncreaseLevel();
                 UpdateExpBar();
                 Debug.Log("🌟 Nivel aumentado. No volverá a subir hoy.");
             }
-            
+            GestorDeDatos.Instance.GuardarDatos();
         }
-        Debug.Log(completedDailyTasks ? "✔ Tareas diarias completadas." : "❌ No se completaron todas las tareas diarias.");
+        Debug.Log(completedDailyTasks ? "✔ Tareas diarias completadas." : "❌ Tareas diarias incompletas.");
     }
 
     public void HandleEnergyAndHealth()
+{
+    // Se obtiene la copia en memoria de los datos del jugador.
+    var datos = GestorDeDatos.Instance.GetDatosJugador();
+    DateTime fechaHoy = DateTime.Now.Date;
+    DateTime fechaUltimaActualizacion;
+
+    if (DateTime.TryParse(datos.lastUpdatedDate, out fechaUltimaActualizacion))
     {
-        datosJugador = gestorDeDatos.CargarDatos();
+        fechaUltimaActualizacion = fechaUltimaActualizacion.Date;
+        Debug.Log($"FECHA HOY: {fechaHoy}");
+        Debug.Log($"FECHA ÚLTIMA ACTUALIZACIÓN: {fechaUltimaActualizacion}");
 
-        // Convertir la fecha de hoy a solo la parte de la fecha (sin la hora)
-        DateTime fechaHoy = DateTime.Now.Date;
-
-        // Variable para almacenar la última fecha guardada
-        DateTime fechaUltimaActualizacion;
-
-        // Intentar convertir la fecha guardada en el JSON a un objeto DateTime
-        if (DateTime.TryParse(datosJugador.lastUpdatedDate, out fechaUltimaActualizacion))
+        // Si ha pasado al menos un día
+        if (fechaHoy > fechaUltimaActualizacion)
         {
-            // Asegurar que solo tomamos la fecha, sin la hora
-            fechaUltimaActualizacion = fechaUltimaActualizacion.Date;
+            Debug.Log("Ha pasado un día. Reiniciando tareas diarias...");
 
-            Debug.Log($"📅 FECHA HOY: {fechaHoy}");
-            Debug.Log($"📅 FECHA ÚLTIMA ACTUALIZACIÓN: {fechaUltimaActualizacion}");
-
-            // Comparar fechas sin la hora
-            if (fechaHoy > fechaUltimaActualizacion)
+            if (!datos.completedDailyTasks)
             {
-                Debug.Log("✔ Ha pasado al menos un día desde la última actualización.");
-
-                if (completedDailyTasks)
-                {
-                    ResetHealth();
-                }
-                else
-                {
-                    DieAndReset();
-                }
-
-                // Actualizar la fecha en los datos del jugador
-                datosJugador.lastUpdatedDate = DateTime.Now.ToString("yyyy-MM-dd"); // Guardar solo la fecha
-                datosJugador.completedDailyTasks = false;
-                datosJugador.levelUpDoneToday = false;
-                gestorDeDatos.GuardarDatos(datosJugador);
-
-                ResetNeedIcons();
-                ButtonHandler buttonHandler = FindObjectOfType<ButtonHandler>();
-                if (buttonHandler != null)
-                {
-                    buttonHandler.UpdateUI();
-                }
+                // Si las tareas diarias NO se completaron, la planta muere.
+                Debug.Log("No se completaron las tareas diarias; la planta muere.");
+                DieAndReset(); // Este método debe establecer currentHealth a 0.
             }
             else
             {
-                Debug.Log("⏳ No ha pasado un día desde la última actualización.");
+                // Si se completaron, la planta se reinicia (por ejemplo, su salud se reinicia a minHealth)
+                Debug.Log("Tareas diarias completadas; la planta se mantiene viva.");
+                ResetHealth(); // Este método asigna currentHealth a minHealth.
+            }
+
+            // Reiniciar la fecha y los flags diarios para el nuevo día:
+            datos.lastUpdatedDate = DateTime.Now.ToString("yyyy-MM-dd");
+            datos.completedDailyTasks = false;
+            datos.levelUpDoneToday = false;
+            datos.receivedWater = false;
+            datos.receivedNutrients = false;
+            datos.receivedSparkles = false;
+
+            GestorDeDatos.Instance.GuardarDatos();
+            ResetNeedIcons(); // Se actualizan los iconos (por ejemplo, volviéndolos opacos)
+            
+            ButtonHandler buttonHandler = FindObjectOfType<ButtonHandler>();
+            if (buttonHandler != null)
+            {
+                buttonHandler.UpdateUI();
             }
         }
         else
         {
-            Debug.LogError("❌ No se pudo convertir 'lastUpdatedDate' a DateTime. Se inicializa con la fecha actual.");
-            datosJugador.lastUpdatedDate = DateTime.Now.ToString("yyyy-MM-dd");
-            gestorDeDatos.GuardarDatos(datosJugador);
+            Debug.Log("No ha pasado un día.");
         }
     }
-
-
+    else
+    {
+        Debug.LogError("Error al parsear lastUpdatedDate");
+        datos.lastUpdatedDate = DateTime.Now.ToString("yyyy-MM-dd");
+        GestorDeDatos.Instance.GuardarDatos();
+    }
+}
 
 
     void ResetNeedIcons()
     {
-        // Restablecer los iconos de agua, nutrientes y brillitos a su estado inicial (opaco)
         waterIcon.color = new Color(1, 1, 1, 0.5f);
         nutrientsIcon.color = new Color(1, 1, 1, 0.5f);
         sparklesIcon.color = new Color(1, 1, 1, 0.5f);
-
-        // También puedes restablecer las variables que controlan si se han recibido o no
         receivedWater = false;
         receivedNutrients = false;
         receivedSparkles = false;
@@ -195,129 +171,118 @@ public class HealthAndExpSprites : MonoBehaviour
 
     void ResetHealth()
     {
-        datosJugador = gestorDeDatos.CargarDatos();
         currentHealth = minHealth;
-        datosJugador.currentHealth = currentHealth;
-        gestorDeDatos.GuardarDatos(datosJugador);
+        var datos = GestorDeDatos.Instance.GetDatosJugador();
+        datos.currentHealth = currentHealth;
+        GestorDeDatos.Instance.GuardarDatos();
         UpdateHealthBar();
-        Debug.Log("🔄 La planta ha reiniciado su vida al 10%.");
+        Debug.Log("La planta ha reiniciado su vida al 10%.");
     }
 
     void DieAndReset()
     {
-        datosJugador = gestorDeDatos.CargarDatos();
         currentHealth = 0;
-        datosJugador.currentHealth = currentHealth;
-        gestorDeDatos.GuardarDatos(datosJugador);
-        Debug.Log("☠️ La planta ha muerto. Debe ser revivida.");
+        var datos = GestorDeDatos.Instance.GetDatosJugador();
+        datos.currentHealth = currentHealth;
+        GestorDeDatos.Instance.GuardarDatos();
+        Debug.Log("La planta ha muerto.");
     }
 
     public void RevivePlant()
     {
-        datosJugador = gestorDeDatos.CargarDatos();
         currentHealth = maxHealth;
-        datosJugador.currentHealth = currentHealth;
-        gestorDeDatos.GuardarDatos(datosJugador);
-        Debug.Log("🟢 La planta ha sido revivida.");
+        var datos = GestorDeDatos.Instance.GetDatosJugador();
+        datos.currentHealth = currentHealth;
+        GestorDeDatos.Instance.GuardarDatos();
+        Debug.Log("La planta ha sido revivida.");
     }
 
     public void AddHealth(float healthAmount)
     {
-        datosJugador = gestorDeDatos.CargarDatos();
         if (currentHealth < maxHealth)
         {
             currentHealth = Mathf.Min(currentHealth + healthAmount, maxHealth);
-
-            datosJugador.currentHealth = currentHealth;
-            gestorDeDatos.GuardarDatos(datosJugador);
+            var datos = GestorDeDatos.Instance.GetDatosJugador();
+            datos.currentHealth = currentHealth;
+            GestorDeDatos.Instance.GuardarDatos();
             UpdateHealthBar();
-            Debug.Log($"❤️ Salud aumentada: {currentHealth}%");
+            Debug.Log($"Salud aumentada: {currentHealth}%");
         }
     }
 
     void UpdateHealthBar()
     {
-        datosJugador = gestorDeDatos.CargarDatos();
-        currentHealth = datosJugador.currentHealth;
-        Debug.Log("ESTOY EN EL UPDATE HEALTH BAR, Y EL VALOR DE CURRENHEALTH ES: " + currentHealth);
+        var datos = GestorDeDatos.Instance.GetDatosJugador();
+        currentHealth = datos.currentHealth;
         int healthIndex = (currentHealth == 100) ? 10 :
                           (currentHealth >= 70) ? 7 :
                           (currentHealth >= 40) ? 4 :
                           (currentHealth >= 10) ? 1 : 0;
-
         healthBarImage.sprite = healthBarSprites[healthIndex];
-        Debug.Log($"🩸 Barra de salud actualizada: {currentHealth}%");
+        Debug.Log($"Barra de salud actualizada: {currentHealth}%");
     }
 
     void UpdateExpBar()
     {
-        datosJugador = gestorDeDatos.CargarDatos();
-        int expIndex = Mathf.Clamp(datosJugador.nivel, 0, expBarSprites.Length - 1);
+        var datos = GestorDeDatos.Instance.GetDatosJugador();
+        int expIndex = Mathf.Clamp(datos.nivel, 0, expBarSprites.Length - 1);
         expBarImage.sprite = expBarSprites[expIndex];
-        Debug.Log($"🌱 Nivel actual: {PlantLevelManager.Instance.GetPlantLevel()}");
+        Debug.Log($"Nivel actual: {PlantLevelManager.Instance.GetPlantLevel()}");
     }
 
     public void ReceiveWater()
     {
-        datosJugador = gestorDeDatos.CargarDatos();
+        var datos = GestorDeDatos.Instance.GetDatosJugador();
         receivedWater = true;
-        datosJugador.receivedWater = receivedWater;
-        waterIcon.color = receivedWater ? Color.white : new Color(1, 1, 1, 0.5f);
-        gestorDeDatos.GuardarDatos(datosJugador);
+        datos.receivedWater = true;
+        waterIcon.color = Color.white;
+        GestorDeDatos.Instance.GuardarDatos();
         AddHealth(30);
         CheckDailyTasks();
-        Debug.Log("💧 Recibió agua.");
+        Debug.Log("Recibió agua.");
     }
-
 
     public void ReceiveNutrients()
     {
-        datosJugador = gestorDeDatos.CargarDatos();
+        var datos = GestorDeDatos.Instance.GetDatosJugador();
         receivedNutrients = true;
-        Debug.Log("Voy a Actualizar el ARCHIVO JSON");
-        datosJugador.receivedNutrients = true;
-        Debug.Log("ENTRANDO AL ARCHIVO");
-        // Consumimos 1 de fertilizante
-        datosJugador.cantidadFertilizante--;
-        gestorDeDatos.GuardarDatos(datosJugador);
-        Debug.Log((datosJugador.receivedNutrients) + " ESTE ES EL VALOR DE RECIEVED NUTUENTS QUE ESTA EN EL ARCHIVO");
-
-        nutrientsIcon.color = receivedNutrients ? Color.white : new Color(1, 1, 1, 0.5f);
+        datos.receivedNutrients = true;
+        // Consumir 1 de fertilizante
+        datos.cantidadFertilizante--;
+        GestorDeDatos.Instance.GuardarDatos();
+        nutrientsIcon.color = Color.white;
         AddHealth(30);
         CheckDailyTasks();
-        Debug.Log("🌱 Recibió nutrientes.");
+        Debug.Log("Recibió nutrientes.");
     }
 
     public void ReceiveSparkles()
     {
-        datosJugador = gestorDeDatos.CargarDatos();
+        var datos = GestorDeDatos.Instance.GetDatosJugador();
         receivedSparkles = true;
-        datosJugador.receivedSparkles = true;
-        datosJugador.cantidadPolen--;
-        gestorDeDatos.GuardarDatos(datosJugador);
-        sparklesIcon.color = receivedSparkles ? Color.white : new Color(1, 1, 1, 0.5f);
+        datos.receivedSparkles = true;
+        // Consumir 1 de polen
+        datos.cantidadPolen--;
+        GestorDeDatos.Instance.GuardarDatos();
+        sparklesIcon.color = Color.white;
         AddHealth(30);
         CheckDailyTasks();
-        Debug.Log("✨ Recibió brillitos.");
+        Debug.Log("Recibió brillitos.");
     }
 
     private void LoadPlantNeeds()
     {
-        // Cargar estado de agua
-        receivedWater = datosJugador.receivedWater;
+        var datos = GestorDeDatos.Instance.GetDatosJugador();
+        receivedWater = datos.receivedWater;
         waterIcon.color = receivedWater ? Color.white : new Color(1, 1, 1, 0.5f);
-        Debug.Log($"💧 Agua recibida cargada: {receivedWater}");
-
-        // Cargar estado de nutrientes
-        receivedNutrients = datosJugador.receivedNutrients;
+        receivedNutrients = datos.receivedNutrients;
         nutrientsIcon.color = receivedNutrients ? Color.white : new Color(1, 1, 1, 0.5f);
-        Debug.Log($"🌱 Nutrientes recibidos cargados: {receivedNutrients}");
-
-        // Cargar estado de brillitos
-        receivedSparkles = datosJugador.receivedSparkles;
+        receivedSparkles = datos.receivedSparkles;
         sparklesIcon.color = receivedSparkles ? Color.white : new Color(1, 1, 1, 0.5f);
-        Debug.Log($"✨ Brillitos recibidos cargados: {receivedSparkles}");
     }
-
+    public float GetCurrentHealth()
+{
+    return GestorDeDatos.Instance.GetDatosJugador().currentHealth;
+}
 
 }

@@ -1,14 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class DataHandler : MonoBehaviour
 {
-    public GameObject plantModel;
-    private GestorDeDatos gestorDeDatos;
+    // Asigna en el inspector el prefab de la planta
+    public GameObject plantPrefab;
+    // Aquí se almacenará la instancia creada en la escena
+    public GameObject currentPlantInstance;
 
+    private GestorDeDatos gestorDeDatos;
     private static DataHandler instance;
-    
     public static DataHandler Instance  
     {
         get
@@ -21,46 +21,38 @@ public class DataHandler : MonoBehaviour
         }
     }
 
+    // Variables privadas para la posición y rotación guardadas
+    private Vector3 lastSavedPosition;
+    private Quaternion lastSavedRotation;
+
     void Start()
     {
-        gestorDeDatos = FindObjectOfType<GestorDeDatos>(); // Obtener referencia
+        if (GestorDeDatos.Instance == null)
+        {
+            Debug.LogError("GestorDeDatos no se encontró en la escena.");
+            return;
+        }
+        gestorDeDatos = GestorDeDatos.Instance;
         LoadPlantPosition();
     }
 
     public void SavePlantPosition(Vector3 position, Quaternion rotation)
     {
-        DatosJugador datosJugador = gestorDeDatos.CargarDatos();
-        datosJugador.plantPosition = position;
-        datosJugador.plantRotation = rotation;
-        gestorDeDatos.GuardarDatos(datosJugador);
+        DatosJugador datos = gestorDeDatos.GetDatosJugador();
+        datos.plantPosition = position;
+        datos.plantRotation = rotation;
+        gestorDeDatos.GuardarDatos();
         Debug.Log("🌱 Posición de la planta guardada en JSON.");
     }
 
-
-
     public void LoadPlantPosition()
     {
-        DatosJugador datosJugador = gestorDeDatos.CargarDatos();
-        lastSavedPosition = datosJugador.plantPosition;
-        lastSavedRotation = datosJugador.plantRotation;
-
+        DatosJugador datos = gestorDeDatos.GetDatosJugador();
+        lastSavedPosition = datos.plantPosition;
+        lastSavedRotation = datos.plantRotation;
         Debug.Log("🌱 Posición de la planta cargada desde JSON.");
     }
 
-
-    // Variables privadas para almacenar la última posición guardada
-    private Vector3 lastSavedPosition;
-    private Quaternion lastSavedRotation;
-
-    // Método para obtener la última posición guardada desde InputManager
-    public Vector3 GetLastSavedPosition()
-    {
-        return lastSavedPosition;
-    }
-
-    public Quaternion GetLastSavedRotation()
-    {
-        return lastSavedRotation;
-    }
-
+    public Vector3 GetLastSavedPosition() => lastSavedPosition;
+    public Quaternion GetLastSavedRotation() => lastSavedRotation;
 }

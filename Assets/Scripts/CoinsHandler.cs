@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class CoinsHandler : MonoBehaviour
@@ -6,58 +7,40 @@ public class CoinsHandler : MonoBehaviour
     [Header("UI")]
     public TextMeshProUGUI coinsText; // Texto donde se muestran las monedas
 
-    [Header("Referencias a scripts")]
-    private GestorDeDatos gestorDeDatos;    
-    private DatosJugador datosJugador;       
+    private DatosJugador datosJugador;
 
-    // ---------------------------------------------------------------------
-    // Inicialización
-    // ---------------------------------------------------------------------
     private void Start()
     {
-        // Buscamos el GestorDeDatos (si está en la escena secundaria)
-        gestorDeDatos = FindObjectOfType<GestorDeDatos>();
-        if (gestorDeDatos == null)
+        if (GestorDeDatos.Instance == null)
         {
-            Debug.LogWarning("❌ No se encontró GestorDeDatos en la escena actual. " +
-                             "Si no necesitas recargar datos en esta escena, ignora este mensaje.");
-        }
-
-        // Revisar si el texto de monedas está asignado
-        if (coinsText == null)
-        {
-            Debug.LogError("❌ coinsText no está asignado en el Inspector.");
+            Debug.LogWarning("GestorDeDatos no se encontró en la escena.");
             return;
         }
 
-        // Si queremos mostrar de inmediato las monedas actuales al entrar a esta escena,
-        // (re)cargamos datos y actualizamos la UI.
+        if (coinsText == null)
+        {
+            Debug.LogError("coinsText no está asignado en el Inspector.");
+            return;
+        }
+
         RefreshCoinsFromData();
     }
 
-    // ---------------------------------------------------------------------
-    // Método para recargar los datos desde JSON y actualizar el texto de monedas
-    // ---------------------------------------------------------------------
+    // Recarga los datos en memoria y actualiza la UI
     public void RefreshCoinsFromData()
     {
-        if (gestorDeDatos == null) return;  // Puede que no exista en esta escena
+        if (GestorDeDatos.Instance == null)
+            return;
 
-        // Cargamos los datos del JSON
-        datosJugador = gestorDeDatos.CargarDatos();
-
-        // Actualizamos el texto de las monedas (si lo deseamos)
+        datosJugador = GestorDeDatos.Instance.GetDatosJugador();
         UpdateCoinsUI();
     }
 
-    // ---------------------------------------------------------------------
-    // Actualiza el texto de monedas en la UI
-    // ---------------------------------------------------------------------
     public void UpdateCoinsUI()
     {
-        // Si por alguna razón datosJugador es nulo, no hacemos nada
         if (datosJugador == null)
         {
-            Debug.LogWarning("⚠ No hay datos de jugador cargados. Monedas no actualizadas.");
+            Debug.LogWarning("No hay datos de jugador cargados. Monedas no actualizadas.");
             return;
         }
 

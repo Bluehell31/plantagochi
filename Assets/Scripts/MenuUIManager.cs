@@ -1,21 +1,16 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System;
 
 public class MenuUIManager : MonoBehaviour
 {
     [SerializeField] private GameObject eventPanelUserInRange;
     [SerializeField] private GameObject eventPanelUserOutOfRange;
     [SerializeField] private GameObject eventPanelAlreadyClaimed;
-
     [SerializeField] private TextMeshProUGUI pointsText;
-
-    private GestorDeDatos gestorDeDatos;
-    private DatosJugador datosJugador;
-
 
     private bool isUIPanelActive;
 
@@ -23,42 +18,38 @@ public class MenuUIManager : MonoBehaviour
     private const string POINTER_HISTORY_KEY = "PointerHistory";
 
     // Lista de fechas/horas en las que el usuario usó cualquier hotspot
-    private const string COINS_KEY = "Coins";
-    private List<System.DateTime> usageHistory;
-
-    private int monedas;
+    private List<DateTime> usageHistory;
 
     void Start()
     {
-        // Inicializa GestorDeDatos y carga los datos del jugador
-        gestorDeDatos = FindObjectOfType<GestorDeDatos>();
-        datosJugador = gestorDeDatos.CargarDatos();
+        if (GestorDeDatos.Instance == null)
+        {
+            Debug.LogError("GestorDeDatos no se encontró en la escena.");
+            return;
+        }
 
-        // Deserializa el historial de uso desde datosJugador
+        // Se usa la copia en memoria
+        // DatosJugador datosJugador = GestorDeDatos.Instance.GetDatosJugador(); // No es necesario guardarlo en variable local
+
+        // Cargar historial de uso desde PlayerPrefs
         usageHistory = LoadUsageHistory();
 
-        // Actualiza el texto en pantalla de las monedas
+        // Actualizar el texto de monedas en pantalla
         UpdatePointsText();
     }
-
 
     private void UpdatePointsText()
     {
         if (pointsText != null)
         {
-            monedas = datosJugador.monedas;
+            int monedas = GestorDeDatos.Instance.GetDatosJugador().monedas;
             pointsText.text = monedas.ToString() + " PUNTOS";
         }
     }
 
-
-    // -------------------------------
-    //     LÓGICA DE LA UI
-    // -------------------------------
-    // Ejemplo: este método se llama cuando el usuario está cerca de un hotspot y se muestra el panel
+    // Muestra el panel de inicio de evento si se cumplen las condiciones
     public void DisplayStartEventPanel()
     {
-        // Si NO hay panel activo y se puede reclamar la recompensa...
         if (!isUIPanelActive && CanCollectReward())
         {
             eventPanelUserInRange.SetActive(true);
@@ -66,56 +57,39 @@ public class MenuUIManager : MonoBehaviour
         }
         else
         {
-            // Si ya no se puede (por límite diario/semanal), también puedes mostrar un panel
             DisplayUserInRangePanel();
         }
     }
+
     public void OnCollectRewardButtonClicked()
     {
-    // Antes de recolectar, verifica si cumple las reglas
-    if (!CanCollectReward())
-    {
-        // Aquí puedes mostrar un mensaje de error o panel informando
-        // que no puede recolectar más recompensas
-        Debug.Log("No puedes recolectar más recompensas hoy o esta semana.");
-        CloseButtonClick();
-        DisplayAlreadyClaimed();
-        return;
-    }
-
-    // Si cumple, recolecta
-    CollectReward();
+        if (!CanCollectReward())
+        {
+            Debug.Log("No puedes recolectar más recompensas hoy o esta semana.");
+            CloseButtonClick();
+            DisplayAlreadyClaimed();
+            return;
         }
 
+        CollectReward();
+    }
 
-    // Método llamado cuando el usuario confirma que quiere reclamar la recompensa
     public void CollectReward()
     {
-        // Añadir puntos a fertilizante y polinización
         AddPoints();
-
-        // Guardar registro de que hoy se usó un hotspot
         SaveUsage();
-
-        // Cerrar el panel
         CloseButtonClick();
-        
     }
+
     private void AddPoints()
     {
-        int pointsToAdd = 100;
-        monedas = datosJugador.monedas;
-
-        monedas += pointsToAdd;
-
-        datosJugador.monedas = monedas;
-
-        // Guarda los datos actualizados en JSON
-        gestorDeDatos.GuardarDatos(datosJugador);
-
+        int pointsToAdd = 200;
+        // Se trabaja directamente con la copia en memoria
+        DatosJugador datos = GestorDeDatos.Instance.GetDatosJugador();
+        datos.monedas += pointsToAdd;
+        GestorDeDatos.Instance.GuardarDatos();
         UpdatePointsText();
     }
-
 
     public void DisplayUserInRangePanel()
     {
@@ -134,6 +108,7 @@ public class MenuUIManager : MonoBehaviour
             isUIPanelActive = true;
         }
     }
+
     public void DisplayAlreadyClaimed()
     {
         if (!isUIPanelActive)
@@ -151,68 +126,50 @@ public class MenuUIManager : MonoBehaviour
         isUIPanelActive = false;
     }
 
-    // -------------------------------
-    //      LÓGICA DE RECOMPENSAS
-    // -------------------------------
-
-    // -------------------------------
-    //      LÓGICA DE LÍMITES
-    // -------------------------------
-    // Aplica la regla:
-    // * 1 uso por día
-    // * Máx 2 usos en los últimos 7 días
+    // Se permite 1 uso por día y máximo 2 usos en los últimos 7 días
     private bool CanCollectReward()
     {
-        System.DateTime now = System.DateTime.Now;
-        
-        // 1) Verificar cuántas veces se ha usado en la última semana
+        DateTime now = DateTime.Now;
         int usesLast7Days = 0;
         foreach (var date in usageHistory)
         {
-            // Si la diferencia es menor o igual a 7 días, cuenta
             if ((now - date).TotalDays <= 7)
             {
                 usesLast7Days++;
             }
         }
 
-        // Si ya se usó 2 veces en la semana, no se puede
         if (usesLast7Days >= 2)
         {
             return false;
         }
 
-        // 2) Verificar si ya se usó hoy
         foreach (var date in usageHistory)
         {
             if (date.Date == now.Date)
             {
-                // Si hay un registro con la misma fecha, ya se usó hoy
                 return false;
             }
         }
 
-        // Si pasa ambas validaciones, se puede recolectar
         return true;
     }
 
-    // -------------------------------
-    //     GUARDADO Y CARGA DE USOS
-    // -------------------------------
+    // Guarda el historial de uso en PlayerPrefs
     private void SaveUsage()
     {
-        usageHistory.Add(System.DateTime.Now);
+        usageHistory.Add(DateTime.Now);
         PlayerPrefs.SetString(POINTER_HISTORY_KEY, SerializeUsageHistory(usageHistory));
         PlayerPrefs.Save();
     }
 
-    private List<System.DateTime> LoadUsageHistory()
+    private List<DateTime> LoadUsageHistory()
     {
         string data = PlayerPrefs.GetString(POINTER_HISTORY_KEY, "");
         return DeserializeUsageHistory(data);
     }
 
-    private string SerializeUsageHistory(List<System.DateTime> history)
+    private string SerializeUsageHistory(List<DateTime> history)
     {
         List<string> dateStrings = new List<string>();
         foreach (var date in history)
@@ -222,24 +179,21 @@ public class MenuUIManager : MonoBehaviour
         return string.Join(";", dateStrings);
     }
 
-    private List<System.DateTime> DeserializeUsageHistory(string data)
+    private List<DateTime> DeserializeUsageHistory(string data)
     {
-        List<System.DateTime> history = new List<System.DateTime>();
-        
+        List<DateTime> history = new List<DateTime>();
         if (string.IsNullOrEmpty(data))
         {
             return history;
         }
-
         string[] entries = data.Split(';');
         foreach (string entry in entries)
         {
-            if (System.DateTime.TryParse(entry, out System.DateTime parsedDate))
+            if (DateTime.TryParse(entry, out DateTime parsedDate))
             {
                 history.Add(parsedDate);
             }
         }
-
         return history;
     }
 }
