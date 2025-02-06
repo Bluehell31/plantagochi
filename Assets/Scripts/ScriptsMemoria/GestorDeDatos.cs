@@ -43,7 +43,7 @@ public class GestorDeDatos : MonoBehaviour
                 experiencia = 0,
                 currentHealth = 10,
                 lastUpdatedDate = DateTime.Now.ToString("yyyy-MM-dd"),
-                monedas = 10,
+                monedas = 50,
                 cantidadPolen = 0,
                 cantidadFertilizante = 0
             };
